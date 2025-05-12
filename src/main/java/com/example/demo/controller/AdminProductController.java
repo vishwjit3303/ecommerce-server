@@ -76,7 +76,7 @@ public class AdminProductController {
 		return new ResponseEntity<Product>(updatedProduct,HttpStatus.OK);
 	}
 	
-	@PostMapping("/creates")
+	@PostMapping("/create")
 	public ResponseEntity<ApiResponse> createMultipleProduct(@RequestBody CreateProductRequest[] reqs) throws ProductException{
 		
 		for(CreateProductRequest product:reqs) {
