@@ -42,9 +42,9 @@ public class Rating {
     
     private LocalDateTime createdAt;
     
-    public Rating() {
-		// TODO Auto-generated constructor stub
-	}
+//    public Rating() {
+//		// TODO Auto-generated constructor stub
+//	}
 
 	public Long getId() {
 		return id;

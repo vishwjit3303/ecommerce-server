@@ -45,9 +45,9 @@ public class Cart {
     @Column(name="total_item")
     private int totalItem;
     
-    public Cart() {
-		// TODO Auto-generated constructor stub
-	}
+//    public Cart() {
+//		// TODO Auto-generated constructor stub
+//	}
     public Long getId() {
 		return id;
 	}
