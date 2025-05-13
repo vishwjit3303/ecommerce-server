@@ -39,14 +39,8 @@ public class AppConfig {
 						
 						CorsConfiguration cfg = new CorsConfiguration();
 						
-						cfg.setAllowedOrigins(Arrays.asList(
-								
-								"http://localhost:3000", 
-								"http://localhost:4000",
-								"http://localhost:4200",
-								"https://vp-ecommerce-ten.vercel.app"					
-							)
-						);
+						// Allow all origins by setting allowedOriginPatterns instead of allowedOrigins
+						cfg.setAllowedOriginPatterns(Collections.singletonList("*"));
 						//cfg.setAllowedMethods(Arrays.asList("GET", "POST","DELETE","PUT"));
 						cfg.setAllowedMethods(Collections.singletonList("*"));
 						cfg.setAllowCredentials(true);
