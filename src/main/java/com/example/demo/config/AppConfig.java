@@ -1,63 +1,68 @@
 package com.example.demo.config;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 
-import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.Collections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Configuration
 public class AppConfig {
+	
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+		.and()
+		.authorizeHttpRequests(Authorize -> Authorize
+				.requestMatchers("/api/**").authenticated()
+				.anyRequest().permitAll()
+				)
+		.addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
+		.csrf().disable()
+		.cors().configurationSource(new CorsConfigurationSource() {
+					
+					@Override
+					public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+						
+						CorsConfiguration cfg = new CorsConfiguration();
+						
+						// Allow all origins by setting allowedOriginPatterns instead of allowedOrigins
+						cfg.setAllowedOriginPatterns(Collections.singletonList("*"));
+						//cfg.setAllowedMethods(Arrays.asList("GET", "POST","DELETE","PUT"));
+						cfg.setAllowedMethods(Collections.singletonList("*"));
+						cfg.setAllowCredentials(true);
+						cfg.setAllowedHeaders(Collections.singletonList("*"));
+						cfg.setExposedHeaders(Arrays.asList("Authorization"));
+						cfg.setMaxAge(3600L);
+						return cfg;
+						
+					}
+				})
+		.and()
+		.httpBasic()
+		.and()
+		.formLogin();
+		
+		return http.build();
+		
+	}
+	
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
-
-    @Value("${spring.datasource.url}")
-    private String datasourceUrl;
-
-    @Value("${spring.datasource.username}")
-    private String datasourceUsername;
-
-    @Value("${spring.datasource.password}")
-    private String datasourcePassword;
-
-    @Bean
-    public DataSource dataSource() {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(datasourceUrl);
-        config.setUsername(datasourceUsername);
-        config.setPassword(datasourcePassword);
-        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        config.setMinimumIdle(2);
-        config.setMaximumPoolSize(5);
-        config.setAutoCommit(true);
-        config.setPoolName("HikariPool-1");
-        config.setIdleTimeout(30000);
-        config.setMaxLifetime(600000);
-        config.setConnectionTimeout(30000);
-        return new HikariDataSource(config);
-    }
-
-    @Bean
-    public CommandLineRunner testDatabaseConnection(DataSource dataSource) {
-        return args -> {
-            try (Connection conn = dataSource.getConnection()) {
-                if (conn.isValid(5)) {
-                    logger.info("Successfully connected to the database.");
-                } else {
-                    logger.error("Failed to validate the database connection.");
-                }
-            } catch (SQLException e) {
-                logger.error("Database connection test failed.", e);
-            }
-        };
-    }
 }
